@@ -5,8 +5,8 @@ dist: trusty
 language: python
 python:
     - 2.7
-    - 3.5
-    - 3.6
+    # - 3.5
+    # - 3.6
 env:
     global:
         - THEANO_FLAGS='floatX=float32'
@@ -61,7 +61,7 @@ before_install:
     - python -c 'import torch; import tensorflow; print(tensorflow.__version__); print(torch.__version__)'
 
     - pip install pytest-faulthandler
-    - docker pull bvlc/caffe:cpu
+    - if [[ $TRAVIS_PYTHON_VERSION == 2.7 ]]; then docker pull bvlc/caffe:cpu; fi
 install:
     - pip install -e .
 script:
@@ -69,7 +69,7 @@ script:
       # tf eager cannot be run in the same process as standard tf
     - pytest --ignore=foolbox/tests/test_models_tensorflow_eager.py --ignore=foolbox/tests/test_models_caffe.py
     - pytest --cov-append foolbox/tests/test_models_tensorflow_eager.py
-    - docker run -v `pwd`:/foolbox bvlc/caffe:cpu  sh -c 'cd /foolbox && bash foolbox/tests/run_caffe_test.sh'
+    - if [[ $TRAVIS_PYTHON_VERSION == 2.7 ]]; then docker run -v `pwd`:/foolbox bvlc/caffe:cpu  sh -c 'cd /foolbox && bash foolbox/tests/run_caffe_test.sh'; fi
     - flake8 --ignore E402,E741,W503,W504 .
 after_success:
     - coveralls
